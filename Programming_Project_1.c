@@ -222,6 +222,13 @@ int main() {
     printf("Enter the size of the array to sort: ");
     scanf("%d", &n);
 
+    if (n <= 0) {
+        while (n <= 0) {
+            printf("Please enter a positive integer for the size of the array: ");
+            scanf("%d", &n);
+        }
+    }
+
     unsigned long int *arr = (unsigned long int *)malloc(n * sizeof(unsigned long int));
 
     if (arr == NULL) {
@@ -236,6 +243,13 @@ int main() {
 
     printf("Enter your choice (1 or 2): ");
     scanf("%d", &choice);
+
+    if (choice < 1 || choice > 2) {
+        while (choice < 1 || choice > 2) {
+            printf("Invalid choice. Please enter 1 or 2: ");
+            scanf("%d", &choice);
+        }
+    }
 
     if (choice == 2) 
     {
@@ -263,7 +277,7 @@ int main() {
         start = clock();
 
         // Sort the array using bubble sort
-        heapSort(arr, n);
+        selectionSort(arr, n);
 
         // End measuring time
         end = clock();
