@@ -13,7 +13,7 @@ void generateRandomArray(unsigned long int arr[], int n, unsigned long int maxSi
     }
 }
 
-void fixedIntervalArray(unsigned long int arr[], int n, int x) {
+void fixedIntervalArray(unsigned long int arr[], int n, unsigned long int x) {
     for (int i = 0; i < n; i++) {
         arr[i] = x++;
     }
@@ -38,7 +38,7 @@ void selectionSort(unsigned long int arr[], int n) {
         
         // Move minimum element to its
         // correct position
-        int temp = arr[i];
+        unsigned long int temp = arr[i];
         arr[i] = arr[min_idx];
         arr[min_idx] = temp;
     }
@@ -216,7 +216,8 @@ void heapSort(unsigned long int arr[], int n){
 
 int main() {    
     const unsigned long int maxSize = 1000000000UL; // Maximum value for random numbers //Arbitrarily large number to ensure we get a good distribution of random numbers
-    int n = 0, x = 0; //n = size of the array & x = starting value for sorted array
+    int n = 0; // n = size of the array
+    unsigned long int x = 0; // x = starting value for sorted array
     srand(time(0)); // Seed the random number generator
 
     printf("Enter the size of the array to sort: ");
@@ -254,7 +255,7 @@ int main() {
     if (choice == 2) 
     {
         printf("Enter the starting value for the sorted array: ");
-        scanf("%d", &x);
+        scanf("%lu", &x);
     }
 
     printf("\n\n");
