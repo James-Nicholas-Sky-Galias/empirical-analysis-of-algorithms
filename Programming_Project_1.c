@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <limits.h>
 #include <errno.h>
 #include <string.h>
 
@@ -23,10 +22,6 @@ void fixedIntervalArray(unsigned long int arr[], int n, unsigned long int x) {
     if (arr == NULL || n <= 0) {
         fprintf(stderr, "Error: Invalid arguments passed to fixedIntervalArray.\n");
         return;
-    }
-    // Warn if the range would overflow unsigned long int
-    if (x > ULONG_MAX - (unsigned long int)(n - 1)) {
-        fprintf(stderr, "Warning: Starting value %lu with size %d may overflow. Wrapping will occur.\n", x, n);
     }
     for (int i = 0; i < n; i++) {
         arr[i] = x++;
@@ -346,6 +341,18 @@ int readULong(unsigned long int *out) {
     return 1;
 }
 
+//writes the header for the CSV file for excel
+FILE *openCSVFile(const char *filename) {
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "Warning: Could not open CSV file '%s' — %s.\n",
+                filename, strerror(errno));
+        return NULL;
+    }
+    fprintf(fp, "Algorithm,N,Data Type,Run 1,Run 2,Run 3,Run 4,Run 5,Average\n");
+    return fp;
+}
+
 int main() {    
     const unsigned long int maxSize = 1000000000UL; // Maximum value for random numbers //Arbitrarily large number to ensure we get a good distribution of random numbers
     int n = 0; // n = size of the array
@@ -398,25 +405,35 @@ int main() {
     printf("\n");
 
     // --- Open output file ---
-    // Filename format: results_Quick_Sort_n10000_20260411_153045.txt
+    // Filename format: results_*sorting algorithm*_*n size*_*date & time*.txt
     char filename[128];
+    char csvFilename[128];
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     snprintf(filename, sizeof(filename), "results_%s_n%d_%04d%02d%02d_%02d%02d%02d.txt",
-             algorithmName(algChoice), n,
-             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-             t->tm_hour, t->tm_min, t->tm_sec);
+            algorithmName(algChoice), n,
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            t->tm_hour, t->tm_min, t->tm_sec);
+    snprintf(csvFilename, sizeof(csvFilename), "results_%s_n%d_%04d%02d%02d_%02d%02d%02d.csv",
+            algorithmName(algChoice), n,
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            t->tm_hour, t->tm_min, t->tm_sec);
 
-    // Replace spaces in algorithm name with underscores in filename
+    // Replace spaces in algorithm name with underscores in both filenames
     for (int i = 0; filename[i]; i++) {
         if (filename[i] == ' ') filename[i] = '_';
+    }
+    for (int i = 0; csvFilename[i]; i++) {
+        if (csvFilename[i] == ' ') csvFilename[i] = '_';
     }
 
     // fp may be NULL if file cannot be opened — program continues without saving
     FILE *fp = openOutputFile(filename, n, algChoice, choice, x);
+    FILE *csvFp = openCSVFile(csvFilename);
 
     // --- 5 timed runs ---
     double totalTime = 0.0;
+    double runTimes[5] = {0}; // For CSV output
 
     // Start measuring time
     for (int i = 0; i < 5; i++) {
@@ -429,6 +446,15 @@ int main() {
         printf("Starting run %d...\n", i + 1);
         printf("Sorting array of size %d...\n", n);
         if (fp) fprintf(fp, "--- Run %d ---\n", i + 1);
+
+        if (fp)
+        {
+            fprintf(fp, "Array before sorting:\n");
+            for (int j = 0; j < n; j++) {
+                fprintf(fp, "%lu ", arr[j]);
+            }
+            fprintf(fp, "\n");
+        }
 
         // Sort the array using the selected sort algorithm
         switch (algChoice) {
@@ -467,12 +493,21 @@ int main() {
         // Calculate the CPU time used
         cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
         totalTime += cpu_time_used;
+        runTimes[i] = cpu_time_used; // Store for CSV output
 
         // Console output
         printf("\nRun %d:\nTime taken to sort: %0.3f seconds\n\n", i + 1, cpu_time_used);
 
         // File output
         if (fp) fprintf(fp, "Time taken to sort: %0.3f seconds\n\n", cpu_time_used);
+        if (fp)
+        {
+            fprintf(fp, "Array after sorting:\n");
+            for (int j = 0; j < n; j++) {
+                fprintf(fp, "%lu ", arr[j]);
+            }
+            fprintf(fp, "\n\n");
+        }
     }
 
     // --- Summary (console + file) ---
@@ -496,6 +531,14 @@ int main() {
         fprintf(fp, "========================================\n");
         fclose(fp);
         printf("\nResults saved to: %s\n", filename);
+    }
+    
+    if (csvFp) {
+        fprintf(csvFp, "%s,%d,%s,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
+                algorithmName(algChoice), n, (choice == 1) ? "Random" : "Sorted",
+                runTimes[0], runTimes[1], runTimes[2], runTimes[3], runTimes[4], avgTime);
+        fclose(csvFp);
+        printf("CSV results saved to: %s\n", csvFilename);
     }
 
     free(arr);
