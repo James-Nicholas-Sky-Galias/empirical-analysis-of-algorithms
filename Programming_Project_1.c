@@ -34,28 +34,26 @@ void fixedIntervalArray(unsigned long int arr[], int n, unsigned long int x) {
 }
 
 void selectionSort(unsigned long int arr[], int n) {
-
     if (arr == NULL || n <= 0) {
         fprintf(stderr, "Error: Invalid arguments passed to selectionSort.\n");
         return;
     }
-
-    for (int i = 0; i < n - 1; i++) {  
-
+    for (int i = 0; i < n - 1; i++) {
+      
         // Assume the current position holds
         // the minimum element
         int min_idx = i;
-
+        
         // Iterate through the unsorted portion
         // to find the actual minimum
         for (int j = i + 1; j < n; j++) {
             if (arr[j] < arr[min_idx]) {
-
+              
                 // Update min_idx if a smaller element is found
                 min_idx = j;
             }
         }
-
+        
         // Move minimum element to its
         // correct position
         unsigned long int temp = arr[i];
@@ -64,14 +62,12 @@ void selectionSort(unsigned long int arr[], int n) {
     }
 }
 
-void insertionSort(unsigned long int arr[], int n) 
+void insertionSort(unsigned long int arr[], int n)
 {
-
     if (arr == NULL || n <= 0) {
         fprintf(stderr, "Error: Invalid arguments passed to insertionSort.\n");
         return;
     }
-
     for (int i = 1; i < n; ++i) {
         unsigned long int key = arr[i];
         int j = i - 1;
@@ -88,12 +84,10 @@ void insertionSort(unsigned long int arr[], int n)
 }
 
 void bubbleSort(unsigned long int arr[], int n) {
-
     if (arr == NULL || n <= 0) {
         fprintf(stderr, "Error: Invalid arguments passed to bubbleSort.\n");
         return;
     }
-
     for (int i = 0; i < n-1; i++) {
         for (int j = 0; j < n-i-1; j++) {
             if (arr[j] > arr[j+1]) {
@@ -106,11 +100,10 @@ void bubbleSort(unsigned long int arr[], int n) {
     }
 }
 
-// Returns 0 on success, -1 on allocation failure
-int merge(unsigned long int arr[], int left, int mid, int right) {
+void merge(unsigned long int arr[], int left, int mid, int right) {
     if (arr == NULL) {
         fprintf(stderr, "Error: NULL array passed to merge.\n");
-        return -1;
+        return;
     }
 
     int i, j, k;
@@ -124,7 +117,7 @@ int merge(unsigned long int arr[], int left, int mid, int right) {
         fprintf(stderr, "Error: Memory allocation failed in merge — %s.\n", strerror(errno));
         free(leftArr);
         free(rightArr);
-        return -1;
+        return;
     }
 
     for (i = 0; i < n1; i++) leftArr[i] = arr[left + i];
@@ -140,28 +133,26 @@ int merge(unsigned long int arr[], int left, int mid, int right) {
 
     free(leftArr);
     free(rightArr);
-    return 0;
 }
 
-// Returns 0 on success, -1 on error; callers propagate the error upward
-int mergeSort(unsigned long int arr[], int left, int right) {
+// The subarray to be sorted is in the index range [left-right]
+void mergeSort(unsigned long int arr[], int left, int right) {
     if (arr == NULL) {
         fprintf(stderr, "Error: NULL array passed to mergeSort.\n");
-        return -1;
+        return;
     }
     if (left < right) {
-
+      
         // Calculate the midpoint
         int mid = left + (right - left) / 2;
 
         // Sort first and second halves
-        if (mergeSort(arr, left, mid)      == -1) return -1;
-        if (mergeSort(arr, mid + 1, right) == -1) return -1;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
 
         // Merge the sorted halves
-        if (merge(arr, left, mid, right)   == -1) return -1;
+        merge(arr, left, mid, right);
     }
-    return 0;
 }
 
 void swap(unsigned long int* a, unsigned long int* b) {
@@ -180,10 +171,20 @@ int partition(unsigned long int arr[], int low, int high) {
         fprintf(stderr, "Error: NULL array passed to partition.\n");
         return -1;
     }
-
-    // Choose the pivot
+    
+    // Choose the pivot as median of first, middle, last
+    int mid = low + (high - low) / 2;
+    unsigned long int a = arr[low], b = arr[mid], c = arr[high];
+    if ((a <= b && b <= c) || (c <= b && b <= a)) {
+        // b is median
+        swap(&arr[mid], &arr[high]);
+    } else if ((b <= a && a <= c) || (c <= a && a <= b)) {
+        // a is median
+        swap(&arr[low], &arr[high]);
+    }
+    // else c is median, already at high
     unsigned long int pivot = arr[high];
-
+    
     // Index of smaller element and indicates 
     // the right position of pivot found so far
     int i = low - 1;
@@ -197,10 +198,10 @@ int partition(unsigned long int arr[], int low, int high) {
             swap(&arr[i], &arr[j]);
         }
     }
-
+    
     // Move pivot after smaller elements and
     // return its position
-    swap(&arr[i + 1], &arr[high]);
+    swap(&arr[i + 1], &arr[high]);  
     return i + 1;
 }
 
@@ -211,13 +212,9 @@ void quickSort(unsigned long int arr[], int low, int high) {
         return;
     }
     if (low < high) {
-
+        
         // pi is the partition return index of pivot
         int pi = partition(arr, low, high);
-        if (pi == -1) {
-            fprintf(stderr, "Error: Partitioning failed in quickSort.\n");
-            return;
-        }
 
         // recursion calls for smaller elements
         // and greater or equals elements
@@ -243,11 +240,11 @@ void heapify(unsigned long int arr[], int n, int i){
     int r = 2 * i + 2;
 
     // If left child is larger than root
-    if (l < n && arr[l] > arr[largest]) 
+    if (l < n && arr[l] > arr[largest])
         largest = l;
 
     // If right child is larger than largest so far
-    if (r < n && arr[r] > arr[largest]) 
+    if (r < n && arr[r] > arr[largest])
         largest = r;
 
     // If largest is not root
@@ -281,7 +278,7 @@ void heapSort(unsigned long int arr[], int n){
         arr[0] = arr[i];
         arr[i] = temp;
 
-         // Call max heapify on the reduced heap
+        // Call max heapify on the reduced heap
         heapify(arr, i, 0);
     }
 }
@@ -349,7 +346,7 @@ int readULong(unsigned long int *out) {
     return 1;
 }
 
-int main() {
+int main() {    
     const unsigned long int maxSize = 1000000000UL; // Maximum value for random numbers //Arbitrarily large number to ensure we get a good distribution of random numbers
     int n = 0; // n = size of the array
     unsigned long int x = 0; // x = starting value for sorted array
@@ -433,8 +430,6 @@ int main() {
         printf("Sorting array of size %d...\n", n);
         if (fp) fprintf(fp, "--- Run %d ---\n", i + 1);
 
-        int sortError;
-
         // Sort the array using the selected sort algorithm
         switch (algChoice) {
             case 1:
@@ -454,7 +449,7 @@ int main() {
                 break;
             case 4:
                 start = clock();
-                sortError = mergeSort(arr, 0, n - 1);
+                mergeSort(arr, 0, n - 1);
                 end = clock();
                 break;
             case 5:
@@ -467,21 +462,6 @@ int main() {
                 heapSort(arr, n);
                 end = clock();
                 break;
-        }
-
-        if (sortError != 0) {
-            fprintf(stderr, "Error: Sorting failed on run %d. Aborting.\n", i + 1);
-            if (fp) {
-                fprintf(fp, "ERROR: Sorting failed on run %d. Aborting.\n", i + 1);
-                fclose(fp);
-            }
-            free(arr);
-            return EXIT_FAILURE;
-        }
-
-        if (end < start) {
-            fprintf(stderr, "Warning: Clock measurement anomaly on run %d. Timing may be inaccurate.\n", i + 1);
-            if (fp) fprintf(fp, "WARNING: Clock measurement anomaly. Timing may be inaccurate.\n");
         }
 
         // Calculate the CPU time used
